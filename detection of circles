@@ -1,0 +1,40 @@
+#detection
+
+import cv2
+import numpy as np
+
+'''img = cv2.imread("red planet.jpg",cv2.IMREAD_COLOR) #should be greyscale
+greyimg = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+blurred = cv2.blur(greyimg,(3,3))
+det = cv2.HoughCircles(blurred,cv2.HOUGH_GRADIENT,1,20,param1=50,param2=50,minRadius=100,maxRadius=300)
+if det is not None:
+    det=np.uint16(np.round(det))
+    for i in det[0]:
+        a,b,c = i[0],i[1],i[2]
+        cv2.circle(img,(a,b),c,(0,255,0),2)
+        cv2.imshow("anythingelse",img)
+        cv2.waitKey(0)
+
+cv2.destroyAllWindows()'''
+
+img = cv2.imread("blobs.jpg",0) #should be greyscale
+width,height = img.shape
+blobs = cv2.SimpleBlobDetector_Params()
+blobs.filterByArea = True
+blobs.minArea = 100
+blobs.filterByCircularity = True
+blobs.minCircularity = 0.01
+blobs.filterByConvexity = True
+blobs.minConvexity = 0.01
+blobs.filterByInertia = True
+blobs.minInertiaRatio = 0.01
+
+topassallparameters = cv2.SimpleBlobDetector_create(blobs)
+variabaletodetectblobs = topassallparameters.detect(img)
+
+kernel = np.zeros((1,1))
+drawkeypoints = cv2.drawKeypoints(img,variabaletodetectblobs,kernel,(0,0,255),cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+numberofblobs = len(variabaletodetectblobs)
+text = cv2.putText(drawkeypoints,str(numberofblobs),(10,height-10),cv2.FONT_HERSHEY_SIMPLEX,3,(0,0,0),2)
+cv2.imshow("title",drawkeypoints)
+cv2.waitKey(0)

@@ -1,10 +1,11 @@
 import cv2
 import numpy as np
 from PIL import Image
+from PIL import ImageFile
 import os
 os.chdir("C:\\Users\\Thomas\\Documents\\Coding\\OpenCV\\movie")
 path = "C:\\Users\\Thomas\\Documents\\Coding\\OpenCV\\movie"
-path2 = "C:\\Users\\Thomas\\Documents\\Coding\\OpenCV"
+
 
 
 totH = 0
@@ -12,6 +13,7 @@ totW = 0
 
 
 Image.MAX_IMAGE_PIXELS = None
+
 for i in os.listdir("."):
     img = Image.open(os.path.join(path,i))
     width,height = img.size
@@ -28,14 +30,15 @@ for i in os.listdir("."):
         resized.save(i)
 
 def compressToMov():
-
+    ImageFile.LOAD_TRUNCATED_IMAGES = True
     vidname = "Movie.mp4"
+    os.chdir("C:\\Users\\Thomas\\Documents\\Coding\\OpenCV\\movie")
     imagelist = []
     for i in os.listdir("."):
         if i.endswith(".jpg") or i.endswith("jpeg") or i.endswith("png"):
             imagelist.append(i)
     frame = cv2.imread(os.path.join(".",imagelist[0]))
-    width,height,layers = frame.shape
+    height,width,layers = frame.shape
     os.chdir("C:\\Users\\Thomas\\Documents\\Coding\\OpenCV")
     fourcc=cv2.VideoWriter_fourcc(*'mp4v')
     vid = cv2.VideoWriter(vidname,fourcc,1,(width,height))
@@ -46,4 +49,3 @@ def compressToMov():
 
 
 compressToMov()
-print(meanW,meanH)

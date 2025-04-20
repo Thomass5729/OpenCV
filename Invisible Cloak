@@ -1,0 +1,38 @@
+#Invisible Cloak
+
+import cv2
+import numpy as np
+
+video = cv2.VideoCapture(0)
+for i in range(60):
+    errorCheck,capture = video.read()
+    if errorCheck == False:
+        continue
+    '''cv2.imshow(f"Frame{i}",capture)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()'''
+while (video.isOpened()):
+    errorCheck,capture2 = video.read()
+    if errorCheck == False:
+        break
+    hsv = cv2.cvtColor(capture2,cv2.COLOR_BGR2HSV)
+    red_low1 = np.array([0,40,40])
+    red_up1 = np.array([0,255,255])
+    mask1 = cv2.inRange(hsv,red_low1,red_up1)
+    red_low2 = np.array([160,40,40])
+    red_up2 = np.array([180,255,255])
+    mask2 = cv2.inRange(hsv,red_low2,red_up2)
+    finalmask = mask1+mask2
+    finalmask = cv2.morphologyEx(finalmask,cv2.MORPH_OPEN,np.ones((3,3),np.uint8),iterations=2)
+    finalmask = cv2.dilate(finalmask,np.ones((3,3),np.uint8),iterations=1)
+    invert = cv2.bitwise_not(finalmask)
+    result1 = cv2.bitwise_and(capture,capture,mask=finalmask)
+    result2 = cv2.bitwise_and(capture2,capture2,mask=invert)
+    finalvideo = cv2.addWeighted(result1,1,result2,1,0)
+    finalvideo = cv2.rotate(finalvideo,cv2.ROTATE_90_COUNTERCLOCKWISE)
+    cv2.imshow("invisible man",finalvideo)
+    key = cv2.waitKey(10)
+    if key == 27: #27 is escape
+        break
+#video.release()
+cv2.destroyAllWindows()

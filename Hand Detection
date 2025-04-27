@@ -1,0 +1,84 @@
+import cv2
+import mediapipe as mp
+import keyboard
+
+mp_hands = mp.solutions.hands
+tools = mp.solutions.drawing_utils
+#hands = mp_hands.Hands(min_detection_confidence=0.6,min_tracking_confidence=0.6)
+
+video = cv2.VideoCapture(0)
+if not video.isOpened():
+    print("error")
+
+
+
+def detect_tips(handlandmarks):
+        thumbtip = handlandmarks.landmark[4]
+        indextip = handlandmarks.landmark[8]
+        middletip = handlandmarks.landmark[12]
+        ringtip = handlandmarks.landmark[16]
+        pinkietip = handlandmarks.landmark[20]
+        display_numbers = 0
+        if thumbtip.x > handlandmarks.landmark[2].x:
+            display_numbers+=1
+        if indextip.y < handlandmarks.landmark[6].y:
+            display_numbers+=1
+        if middletip.y < handlandmarks.landmark[10].y:
+            display_numbers+=1
+        if ringtip.y < handlandmarks.landmark[14].y:
+            display_numbers+=1
+        if pinkietip.y < handlandmarks.landmark[18].y:
+            display_numbers+=1
+        return display_numbers
+
+try:
+    
+    with mp_hands.Hands(
+            min_detection_confidence=0.6,
+            min_tracking_confidence=0.6
+        ) as hands:
+
+            while True:
+                errorCheck,frame = video.read()
+                if not errorCheck or frame is None:
+                    print("detected error frame")
+                    continue
+                #resize the window to be bigger
+                height,width = frame.shape[:2]
+                area_scale_factor = 4.1
+                len_sc_factor= area_scale_factor**0.5
+                newHeight = int(height*len_sc_factor)
+                aspectRatio = width/height
+                newWidth = int(newHeight*aspectRatio)
+
+
+                frame = cv2.resize(frame,(newWidth,newHeight),interpolation=cv2.INTER_LINEAR)
+                frameRGB = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
+                result = hands.process(frameRGB)
+                if result.multi_hand_landmarks:
+                    for i in result.multi_hand_landmarks:
+                        tools.draw_landmarks(frame,i,mp_hands.HAND_CONNECTIONS)
+                        open_fingers = detect_tips(i)
+                        cv2.putText(frame,f"{open_fingers}",(300,300),cv2.FONT_HERSHEY_SIMPLEX,1,(255,0,0),2)
+
+                #move window to middle
+                x = (1920 - newWidth) // 2
+                y = (1080-48 - (newHeight+26)) // 2 #doesn't include the task bar, and accounts for title bar
+                cv2.imshow("Hand Detection",frame)
+                cv2.moveWindow("Hand Detection", x, y)
+
+
+                key = cv2.waitKey(1)
+                '''if key == 27: #27 is escape
+                    print("ESC pressed. Closing Virtual Camera...")
+                    break'''
+                if keyboard.is_pressed('esc'):
+                    print("ESC pressed. Closing Virtual Camera...")
+                    break
+                if cv2.getWindowProperty("Hand Detection", cv2.WND_PROP_VISIBLE) < 1: #allows the "❌" button to be used
+                    print("Window closed: Exiting loop.")
+                    break
+
+finally:
+    video.release()
+    cv2.destroyAllWindows()
